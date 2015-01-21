@@ -1,0 +1,10 @@
+{
+  "name": "Counting-Lines-of-Code",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node ."
+  },
+  "author": "Zhe Feng"
+}
