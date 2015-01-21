@@ -28,7 +28,9 @@ var newLns = function(code) {
 var countMixed = function(res, lines, idx, startIdx, match) {
   var last = res.last;
   notEmpty = nonEmpty.exec(lines[0])
-  if ( notEmpty && ((last != null ? last.stop : void 0) === idx || startIdx === idx)) {
+  startByCurrentLine = startIdx === idx
+  endByCurrentLine = (last != null ? last.stop : void 0) === idx
+  if ( notEmpty && (endByCurrentLine || startByCurrentLine)) {
     res.mixed.push({
       start: idx,
       stop: idx
@@ -67,74 +69,6 @@ var getType = function(single, start) {
   }
 };
 
-var matchIdx = function(m) {
-  return m.index + m[0].length;
-};
-var countComments = function(code) {
-  var myself = function(res, code, idx) {
-    if (code === '') {
-      return res;
-    }
-    if (code[0] === '\n') {
-      return function() {
-        return myself(res, code.slice(1), ++idx);
-      };
-    }
-    var start = regex.start.exec(code);
-    var single = regex.single.exec(code);
-    if (!(start || single)) {
-      countMixed(res, code.split('\n'), idx);
-      return res;
-    }
-    var type = getType(single, start);
-    var match = (function() {
-      switch (type) {
-        case 'single':
-          return single;
-        case 'block':
-          return start;
-      }
-    })();
-    var cStartIdx = matchIdx(match);
-    var comment = code.substring(cStartIdx);
-    var lines = code.substring(0, match.index).split('\n');
-    var startIdx = lines.length - 1 + idx;
-    var stop = getStop(comment, type);
-    if (!stop) {
-      res.error = true;
-      return res;
-    }
-    var empty = emptyLns(code.substring(match.index, cStartIdx + matchIdx(stop)));
-    comment = comment.substring(0, stop.index);
-    var len = newLns(comment);
-    var splitAt = cStartIdx + comment.length + stop[0].length;
-    code = code.substring(splitAt);
-    countMixed(res, lines, idx, startIdx, match);
-    res.last = {
-      start: startIdx,
-      stop: startIdx + len,
-      empty: empty
-    };
-    res[type].push(res.last);
-    return function() {
-      return myself(res, code, startIdx + len);
-    };
-  };
-  return trampoline(myself({
-    single: [],
-    block: [],
-    mixed: []
-  }, code, 0));
-};
-
-
-
-var trampoline = function(next) {
-  while (typeof next === 'function') {
-    next = next();
-  }
-  return next;
-};
 var lineSum = function(comments) {
   var sum = 0;
   var i = 0;
@@ -149,6 +83,57 @@ var lineSum = function(comments) {
   return sum;
 }
 
+var matchIdx = function(m) {
+  return m.index + m[0].length;
+};
+
+var countComments = function(res, code, idx) {
+  if (code === '') {
+    return res;
+  }
+  if (code[0] === '\n') {
+    return countComments(res, code.slice(1), ++idx);
+  }
+  var start = regex.start.exec(code);
+  var single = regex.single.exec(code);
+  if (!(start || single)) {
+    countMixed(res, code.split('\n'), idx);
+    return res;
+  }
+  var type = getType(single, start);
+  var match = (function() {
+    switch (type) {
+      case 'single':
+        return single;
+      case 'block':
+        return start;
+    }
+  })();
+  var cStartIdx = matchIdx(match);
+  var comment = code.substring(cStartIdx);
+  var lines = code.substring(0, match.index).split('\n');
+  var startIdx = lines.length - 1 + idx;
+  var stop = getStop(comment, type);
+  if (!stop) {
+    res.error = true;
+    return res;
+  }
+  var empty = emptyLns(code.substring(match.index, cStartIdx + matchIdx(stop)));
+  comment = comment.substring(0, stop.index);
+  var len = newLns(comment);
+  var splitAt = cStartIdx + comment.length + stop[0].length;
+  code = code.substring(splitAt);
+  countMixed(res, lines, idx, startIdx, match);
+  res.last = {
+    start: startIdx,
+    stop: startIdx + len,
+    empty: empty
+  };
+  res[type].push(res.last);
+  return countComments(res, code, startIdx + len);
+};
+
+
 var counter = function(code) {
   if (typeof code != "string"){
     return 0;
@@ -159,7 +144,7 @@ var counter = function(code) {
   }
   var total = (1 + newLns(code)) || 1;
   var empty = emptyLns(code);
-  var res = countComments(code);
+  var res = countComments({ single: [], block: [], mixed: [] }, code, 0);
   var single = lineSum(res.single);
   var block = lineSum(res.block);
   var comment = block + single;
