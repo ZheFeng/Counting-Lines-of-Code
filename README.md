@@ -1,28 +1,24 @@
 # Counting Lines of Code
 
 ```
-npm start
+npm install
+npm test
 ```
 The output will be the sample code and the count number
 ```
-> Counting-Lines-of-Code@1.0.0 start /Users/zhefeng/development/myob/Counting-Lines-of-Code
-> node .
+> Counting-Lines-of-Code@1.0.0 test /Users/zhefeng/development/myob/Counting-Lines-of-Code
+> mocha test/*Test.js
 
-Code:
 
-/*
-  This is a comment block
- */
-// This is a single line comment
-/* block empty
 
-*/
-var test = function(){
-  var i = 0; //this is a inline comment
-  return /* this is a inline coment */ i;
-}
-// This is a single line comment
-var test2 = 0;
+  Line Counter
+    ✓ should be able to detect single line comment
+    ✓ should be able to detect block comment
+    ✓ should be able to detect empty line
+    ✓ should be able to detect empty block comment
+    ✓ should be able to detect comment nest in comment
+    ✓ should be able to detect mixed comment
 
-Lines count: 5
+
+  6 passing (8ms)
 ```
