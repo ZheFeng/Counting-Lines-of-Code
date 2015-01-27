@@ -4,7 +4,6 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node .",
     "test": "./node_modules/.bin/mocha test/*Test.js"
   },
   "author": "Zhe Feng",
