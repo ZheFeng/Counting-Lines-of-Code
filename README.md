@@ -4,7 +4,7 @@
 npm install
 npm test
 ```
-The output will be the sample code and the count number
+The output will be
 ```
 > Counting-Lines-of-Code@1.0.0 test /Users/zhefeng/development/myob/Counting-Lines-of-Code
 > mocha test/*Test.js
