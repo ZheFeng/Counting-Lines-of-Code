@@ -4,7 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node ."
+    "start": "node .",
+    "test": "./node_modules/.bin/mocha test/*Test.js"
   },
-  "author": "Zhe Feng"
+  "author": "Zhe Feng",
+  "devDependencies": {
+    "chai": "^1.10.0",
+    "mocha": "^2.1.0"
+  }
 }
